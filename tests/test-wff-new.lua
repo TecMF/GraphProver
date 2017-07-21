@@ -17,7 +17,6 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
 local tests = require'tests'
 local assert = assert
-local ipairs = ipairs
 
 local wff = require'graphprover.wff'
 _ENV = nil
