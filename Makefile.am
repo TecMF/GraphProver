@@ -35,6 +35,17 @@ include $(top_srcdir)/build-aux/Makefile.am.gitlog
 dist-hook:
 	@echo $(VERSION) > $(distdir)/.tarball-version
 
+# Documentation.
+.PHONY: doc
+doc:
+	$(GENDOC)
+
+if WITH_DOC
+GENDOC= $(LDOC) .
+else
+GENDOC=
+endif
+
 EXTRA_DIST+=\
   .version\
   README.md\
@@ -48,6 +59,7 @@ EXTRA_DIST+=\
   build-aux/useless-if-before-free\
   build-aux/util.m4\
   build-aux/warnings.m4\
+  config.ld\
   maint.mk\
   $(NULL)
 
@@ -79,3 +91,10 @@ MAINTAINERCLEANFILES+=\
   graphprover/config.h.in\
   graphprover/config.h.in~\
   $(NULL)
+
+CLEANDIRS+=\
+  doc\
+  $(NULL)
+
+clean-local:
+	rm -rf $(CLEANDIRS)

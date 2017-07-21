@@ -60,6 +60,7 @@
 /configure
 /coverage
 /coverage.info
+/doc
 /graphprover/config.h
 /graphprover/config.h.in
 /graphprover/stamp-h1

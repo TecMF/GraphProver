@@ -16,25 +16,25 @@ You should have received a copy of the GNU General Public License
 along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
 local tests = require'tests'
+local assert = assert
+local ipairs = ipairs
+
 local wff = require'graphprover.wff'
 _ENV = nil
 
-tests.ASSERT_CHECK_API {
-   wff,
-   __eq = 'function',
-   __index = 'table',
-   __metatable = 'string',
-   is_and = 'function',
-   is_atom = 'function',
-   is_iff = 'function',
-   is_immediate_sub = 'function',
-   is_imp = 'function',
-   is_not = 'function',
-   is_or = 'function',
-   is_proper_sub = 'function',
-   new = 'function',
-   parse = 'function',
-   sym = 'function',
-   tag = 'function',
-   unpack = 'function',
-}
+-- Syntax errors.
+assert (not wff.new'')
+assert (not wff.new'1')
+assert (not wff.new'1 1')
+assert (not wff.new'a 1')
+assert (not wff.new'()a 1')
+assert (not wff.new'()')
+assert (not wff.new'not a ()')
+assert (not wff.new')not a(')
+assert (not wff.new'not-a')
+assert (not wff.new'and a')
+assert (not wff.new' a ')
+
+local f = wff.new ('a')
+assert (f)
+assert (f:tag () == 'atom' and f:sym () == 'a')

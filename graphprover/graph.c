@@ -24,6 +24,8 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  */
 #include <lauxlib.h>
 #include <lua.h>
 
+int luaopen_graphprover_graph (lua_State *);
+
 int
 luaopen_graphprover_graph (lua_State *L)
 {

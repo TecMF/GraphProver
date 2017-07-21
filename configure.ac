@@ -129,6 +129,16 @@ AH_VERBATIM([G_TYPE_INIT_WRAPPER],
 ])
 AC_MSG_RESULT([$must_call_g_type_init])
 
+# With docs?
+AU_ARG_WITH([doc], [build documentation])
+AS_IF([test "$with_doc" = no], [],
+ [AC_CHECK_PROGS([LDOC], [ldoc])
+  AS_IF([test -z "$LDOC"],
+   [AS_IF([test "$with_doc = yes"],
+     [AC_MSG_ERROR([--with-doc requires ldoc])])])
+  with_doc="yes"])
+AM_CONDITIONAL([WITH_DOC], [test "$with_doc" = yes])
+
 # Output.
 AC_CONFIG_FILES([
 Makefile
@@ -137,15 +147,18 @@ tests/Makefile
 ])
 
 AC_OUTPUT
-AC_MSG_NOTICE([summary of main build options:
+AC_MSG_NOTICE([summary of build options:
 
-  Version:         ${VERSION}
-  Host:            ${host}
-  Install prefix:  ${prefix}
-  Compiler:        ${CC}
-  Cflags:          ${CFLAGS}
-  Cppflags:        ${CPPFLAGS}
-  Warning flags:   ${WERROR_CFLAGS} ${WARN_CFLAGS}
-  Library types:   Shared=${enable_shared}, Static=${enable_static}
-  Valgrind:        ${VALGRIND}
+  version:       ${VERSION}
+  host:          ${host}
+  prefix:        ${prefix}
+  compiler:      ${CC}
+  cppflags:      ${CPPFLAGS}
+  cflags:        ${CFLAGS}
+  ldflags:       ${LDFLAGS}
+  warning flags: ${WERROR_CFLAGS} ${WARN_CFLAGS}
+  library types: shared=${enable_shared}, static=${enable_static}
+  valgrind:      ${VALGRIND}
+
+  build docs:    ${with_doc}
 ])

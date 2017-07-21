@@ -15,7 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
+local error = error
+local io = io
+local pairs = pairs
+local table = table
+local type = type
+
 local tests = {}
+_ENV = nil
 
 local function cat (s)
    io.stdout:write (s)
@@ -48,6 +55,20 @@ function tests.dump (...)
       dump (args[i])
       cat ('\n')
    end
+end
+
+---
+-- Returns the maximum integer index in the given table T.
+-- If no index is found, returns nil.
+---
+function tests.maxi (t)
+   local max = nil
+   for k,_ in pairs (t) do
+      if type (k) == 'number' and (max == nil or k > max) then
+         max = k
+      end
+   end
+   return max
 end
 
 ---

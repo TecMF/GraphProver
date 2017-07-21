@@ -1,4 +1,5 @@
---[[ Copyright (C) 2017 PUC-Rio/Laboratorio TecMF
+--[[ config.ld -- ldoc setup.
+     Copyright (C) 2017 PUC-Rio/Laboratorio TecMF
 
 This file is part of GraphProver.
 
@@ -15,26 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
-local tests = require'tests'
-local wff = require'graphprover.wff'
-_ENV = nil
+project = 'GraphProver'
+description = 'A graph based prover'
+title = 'GraphProver Documentation'
+file = 'graphprover'
 
-tests.ASSERT_CHECK_API {
-   wff,
-   __eq = 'function',
-   __index = 'table',
-   __metatable = 'string',
-   is_and = 'function',
-   is_atom = 'function',
-   is_iff = 'function',
-   is_immediate_sub = 'function',
-   is_imp = 'function',
-   is_not = 'function',
-   is_or = 'function',
-   is_proper_sub = 'function',
-   new = 'function',
-   parse = 'function',
-   sym = 'function',
-   tag = 'function',
-   unpack = 'function',
-}
+format = 'markdown'
+kind_names = {topic='Manual', module='Libraries'}
+merge = true
+sort = true
+sort_modules=true
+style = '!fixed'
+use_markdown_titles = true
+
+-- Local Variables:
+-- mode: lua
+-- End:
