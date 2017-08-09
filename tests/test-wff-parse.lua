@@ -34,7 +34,7 @@ assert (not wff.parse')not a(')
 assert (not wff.parse'not-a')
 assert (not wff.parse'and a')
 
--- String, tag, symbol.
+-- String, tag/is_*, symbol.
 local tests = {
    -----------------------------------------------
    -- atoms
@@ -98,7 +98,8 @@ local tests = {
 for _,t in ipairs (tests) do
    local f = wff.parse (t[1])
    assert (f, ("failed to parse '%s'"):format (t[1]))
-   assert (f:tag () == t[2],
+   assert (f:tag () == t[2]
+              and wff[('is_%s'):format (f:tag ())] (f) == true,
            ("bad tag for '%s' (expected '%s', got '%s')")
               :format (t[1], t[2], f:tag ()))
    assert (f:sym () == t[3],

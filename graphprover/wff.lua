@@ -231,10 +231,10 @@ end
 -- @return[2] `false` otherwise.
 ---
 function wff:__eq (other)
-   if self._tag ~= other._tag or #self ~= #other then
+   if self._tag ~= other._tag then
       return false
    end
-   if self._sym ~= other._sym then
+   if self._tag == 'atom' and self._sym ~= other._sym then
       return false
    end
    for i=1,#self do
@@ -248,7 +248,7 @@ end
 ---
 -- Tests whether formula is an immediate formula of another.
 -- @param other formula.
--- @return[1] `true` if successful.
+-- @return[1] `true` if successful, plus occurrence index.
 -- @return[2] `false` otherwise.
 ---
 function wff:is_immediate_sub (other)
@@ -282,11 +282,11 @@ function wff:is_proper_sub (other)
 end
 
 ---
--- Gets immediate subformulas.
--- @return the immediate subformulas.
+-- Gets immediate subformulas of formula.
+-- @return the immediate subformulas of formula.
 ---
 function wff:unpack ()
-   if not self:is_formula () then
+   if self:is_atom () then
       return nil                -- nothing to do
    end
    return table.unpack (self)

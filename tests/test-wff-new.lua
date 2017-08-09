@@ -34,6 +34,5 @@ assert (not wff.new'not-a')
 assert (not wff.new'and a')
 assert (not wff.new' a ')
 
-local f = wff.new ('a')
-assert (f)
+local f = assert (wff.new ('a'))
 assert (f:tag () == 'atom' and f:sym () == 'a')

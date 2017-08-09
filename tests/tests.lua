@@ -19,6 +19,7 @@ local error = error
 local io = io
 local pairs = pairs
 local table = table
+local tostring = tostring
 local type = type
 
 local tests = {}
@@ -28,7 +29,7 @@ local function cat (s)
    io.stdout:write (s)
 end
 
-local function dump (x, tab)
+local function dump0 (x, tab)
    if type (x) ~= 'table' then
       cat (tostring (x))
    else
@@ -36,9 +37,9 @@ local function dump (x, tab)
       cat ('{\n')
       for k,v in pairs (x) do
          cat (('   '):rep (tab))
-         dump (k, tab + 1)
+         dump0 (k, tab + 1)
          cat ('=')
-         dump (v, tab + 1)
+         dump0 (v, tab + 1)
          cat (',\n')
       end
       cat (('   '):rep (tab - 1)..'}')
@@ -52,9 +53,10 @@ function tests.dump (...)
    local args = {...}
    local n = tests.maxi (args) or 0
    for i=1,n do
-      dump (args[i])
+      dump0 (args[i])
       cat ('\n')
    end
+   return ...
 end
 
 ---

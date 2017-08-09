@@ -59,8 +59,10 @@ scripts=
 scripts+= test-graph-api.lua
 # graphprover.wff
 scripts+= test-wff-api.lua
-scripts+= test-wff-parse.lua
 scripts+= test-wff-new.lua
+scripts+= test-wff-parse.lua
+scripts+= test-wff-__eq.lua
+scripts+= test-wff-is-immediate-sub.lua
 check_SCRIPTS= $(scripts)
 
 TESTS= $(check_SCRIPTS)
