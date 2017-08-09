@@ -21,4 +21,10 @@ local assert = assert
 local graph = require'graphprover.graph'
 _ENV = nil
 
-assert (graph == true)
+tests.ASSERT_CHECK_API {
+   graph,
+   __gc = 'function',
+   __index = 'table',
+   __metatable = 'string',
+   new = 'function',
+}

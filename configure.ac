@@ -46,10 +46,12 @@ AC_SUBST([GRAPHPROVER_VERSION_MICRO], graphprover_version_micro)
 AC_SUBST([GRAPHPROVER_VERSION_STRING], graphprover_version_string)
 
 # Dependencies version.
-m4_define([glib_required_version], [2.32.4])
-m4_define([lua_required_version], [5.2])
 AC_SUBST([GLIB_REQUIRED_VERSION], glib_required_version)
+AC_SUBST([IGRAPH_REQUIRED_VERSION], igraph_required_version)
 AC_SUBST([LUA_REQUIRED_VERSION], lua_required_version)
+m4_define([glib_required_version], [2.32.4])
+m4_define([igraph_required_version], [0.7])
+m4_define([lua_required_version], [5.2])
 
 # Tool checks.
 AU_PROG_CC_VISIBILITY
@@ -75,15 +77,6 @@ AU_ARG_ENABLE_WARNINGS([$nw])
 # Library functions.
 AC_CHECK_LIBM
 AU_CHECK_MACROS_H
-
-# Check for Lua.
-AU_CHECK_LUA(lua_required_version)
-LUA_LIBS="$LUA_LIBS -export-dynamic"
-AS_IF([test "$au_lua_version" = 5.3],
- [AC_DEFINE([LUA_COMPAT_APIINTCASTS], [1],
-   [Define to 1 to enable Lua macros for integer manipulation])])
-AC_SUBST([graphproverdatadir], ["${luadatadir}/$PACKAGE"])
-AC_SUBST([graphproverlibdir], ["${lualibdir}/$PACKAGE"])
 
 # Check for GLib.
 AU_VERSION_BREAK([glib], glib_required_version)
@@ -128,6 +121,18 @@ AH_VERBATIM([G_TYPE_INIT_WRAPPER],
 #endif
 ])
 AC_MSG_RESULT([$must_call_g_type_init])
+
+# Check for igraph.
+AU_CHECK_PKG([IGRAPH], [igraph >= igraph_required_version])
+
+# Check for Lua.
+AU_CHECK_LUA(lua_required_version)
+LUA_LIBS="$LUA_LIBS -export-dynamic"
+AS_IF([test "$au_lua_version" = 5.3],
+ [AC_DEFINE([LUA_COMPAT_APIINTCASTS], [1],
+   [Define to 1 to enable Lua macros for integer manipulation])])
+AC_SUBST([graphproverdatadir], ["${luadatadir}/$PACKAGE"])
+AC_SUBST([graphproverlibdir], ["${lualibdir}/$PACKAGE"])
 
 # With docs?
 AU_ARG_WITH([doc], [build documentation])

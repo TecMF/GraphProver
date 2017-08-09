@@ -20,8 +20,10 @@ include $(top_srcdir)/build-aux/Makefile.am.common
 include $(top_srcdir)/build-aux/Makefile.am.link
 
 AM_CPPFLAGS=
-AM_CFLAGS= $(WERROR_CFLAGS) $(WARN_CFLAGS) $(LUA_CFLAGS) $(GLIB_CFLAGS)
-AM_LDFLAGS= -module $(LT_MODULE_LDFLAGS)
+AM_CFLAGS= $(WERROR_CFLAGS) $(WARN_CFLAGS)\
+  $(GLIB_CFLAGS) $(IGRAPH_CFLAGS) $(LUA_CFLAGS)
+AM_LDFLAGS= -module $(LT_MODULE_LDFLAGS)\
+  $(GLIB_CFLAGS) $(IGRAPH_LIBS) $(LUA_LIBS)
 
 # Lua/C modules.
 graphproverlib_LTLIBRARIES= graph.la
