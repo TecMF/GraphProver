@@ -29,7 +29,7 @@ local wff = {}
 _ENV = nil
 
 ---
--- Propositional logic formula.
+-- Well-formed, propositional formulas.
 -- @classmod wff
 ---
 do
@@ -124,10 +124,10 @@ local Grammar = {
 
 
 ---
--- Creates a new atomic formula.
--- @param sym formula symbol.
--- @return[1] the resulting atomic formula.
--- @return[2] `nil` plus error message.
+-- Creates a new atomic formula
+-- @string sym formula symbol
+-- @return[1] the resulting atomic formula
+-- @return[2] `nil` plus error message
 ---
 function wff:new (sym)
    local sym = sym or self
@@ -140,9 +140,9 @@ end
 
 ---
 -- Parses formula string.
--- @param s formula string.
--- @return[1] the resulting formula.
--- @return[2] `nil` plus error message.
+-- @string s formula string
+-- @return[1] the resulting formula
+-- @return[2] `nil` plus error message
 ---
 function wff:parse (s)
    local s = s or self
@@ -156,7 +156,8 @@ end
 
 ---
 -- Gets formula tag.
--- @return the formula tag.
+-- @return the formula tag (`'atom'`, `'not'`, `'and'`, `'or'`, `'imp'`,
+-- or, `'iff'`)
 ---
 function wff:tag ()
    return self._tag
@@ -164,7 +165,7 @@ end
 
 ---
 -- Gets formula symbol.
--- @return the formula symbol.
+-- @return the formula symbol
 ---
 function wff:sym ()
    return self._sym
@@ -172,8 +173,8 @@ end
 
 ---
 -- Tests whether formula is an atom.
--- @return[1] `true` if formula is an atom.
--- @return[2] `false` otherwise.
+-- @return[1] `true` if formula is an atom
+-- @return[2] `false` otherwise
 ---
 function wff:is_atom ()
    return self:tag () == 'atom'
@@ -181,8 +182,8 @@ end
 
 ---
 -- Tests whether formula is a negation.
--- @return[1] `true` if formula is a negation.
--- @return[2] `false` otherwise.
+-- @return[1] `true` if formula is a negation
+-- @return[2] `false` otherwise
 ---
 function wff:is_not ()
    return self:tag () == 'not'
@@ -190,8 +191,8 @@ end
 
 ---
 -- Tests whether formula is a conjunction.
--- @return[1] `true`, if formula is a conjunction.
--- @return[2] `false`, otherwise.
+-- @return[1] `true` if formula is a conjunction
+-- @return[2] `false` otherwise
 ---
 function wff:is_and ()
    return self:tag () == 'and'
@@ -199,8 +200,8 @@ end
 
 ---
 -- Tests whether formula is a disjunction.
--- @return[1] `true` if formula is a disjunction.
--- @return[2] `false` otherwise.
+-- @return[1] `true` if formula is a disjunction
+-- @return[2] `false` otherwise
 ---
 function wff:is_or ()
    return self:tag () == 'or'
@@ -208,8 +209,8 @@ end
 
 ---
 -- Tests whether formula is an implication.
--- @return[1] `true` if formula is a implication.
--- @return[2] `false` otherwise.
+-- @return[1] `true` if formula is a implication
+-- @return[2] `false` otherwise
 ---
 function wff:is_imp ()
    return self:tag () == 'imp'
@@ -217,18 +218,18 @@ end
 
 ---
 -- Tests whether formula is a bi-implication.
--- @return[1] `true` if formula is a bi-implication.
--- @return[2] `false` otherwise.
+-- @return[1] `true` if formula is a bi-implication
+-- @return[2] `false` otherwise
 ---
 function wff:is_iff ()
    return self:tag () == 'iff'
 end
 
 ---
--- Tests whether formula is equal to another.
--- @param other formula.
--- @return[1] `true` if successful.
--- @return[2] `false` otherwise.
+-- Tests whether formula is syntactically equal to another.
+-- @tparam wff other the other formula
+-- @return[1] `true` if successful
+-- @return[2] `false` otherwise
 ---
 function wff:__eq (other)
    if self._tag ~= other._tag then
@@ -247,29 +248,26 @@ end
 
 ---
 -- Tests whether formula is an immediate formula of another.
--- @param other formula.
--- @return[1] `true` if successful, plus occurrence index.
--- @return[2] `false` otherwise.
+-- @tparam wff other the other formula
+-- @return[1] `true` if successful
+-- @return[2] `false` otherwise
 ---
 function wff:is_immediate_sub (other)
    for i=1,#other do
       if self == other[i] then
-         return true, i
+         return true
       end
    end
    return false
 end
 
 ---
--- Tests whether formula is a proper formula of another.
--- @param other formula.
--- @return[1] `true` if successful.
--- @return[2] `false` otherwise.
+-- Tests whether formula is a proper formula of another
+-- @tparam wff other the other formula
+-- @return[1] `true` if successful
+-- @return[2] `false` otherwise
 ---
 function wff:is_proper_sub (other)
-   if #other == 0 then
-      return false
-   end
    if self:is_immediate_sub (other) then
       return true
    end
@@ -283,7 +281,7 @@ end
 
 ---
 -- Gets immediate subformulas of formula.
--- @return the immediate subformulas of formula.
+-- @treturn wff,... all immediate subformulas of formula
 ---
 function wff:unpack ()
    if self:is_atom () then
