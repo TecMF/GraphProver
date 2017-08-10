@@ -74,6 +74,7 @@ l_graph_new (lua_State *L)
   graph = (Graph *) lua_newuserdata (L, sizeof (*graph));
   g_assert_nonnull (graph);
   igraphx_empty_attrs (&graph->ig, n, TRUE, NULL);
+  luaL_setmetatable (L, GRAPH);
 
   return 1;
 }
@@ -86,16 +87,36 @@ static int
 __l_graph_gc (lua_State *L)
 {
   igraph_t ig;
+
   graph_check (L, 1, &ig);
   igraphx_destroy (&ig);
+
   return 0;
+}
+
+/***
+ * Gets the number of nodes and number of edges in graph.
+ * @function count
+ * @return |V| and |E|
+ */
+static int
+l_graph_count (lua_State *L)
+{
+  igraph_t ig;
+
+  graph_check (L, 1, &ig);
+  lua_pushinteger (L, igraph_vcount (&ig));
+  lua_pushinteger (L, igraph_ecount (&ig));
+
+  return 2;
 }
 
 
 /* Graph methods.  */
 static const struct luaL_Reg methods[] = {
-  {"new", l_graph_new},
   {"__gc", __l_graph_gc},
+  {"count", l_graph_count},
+  {"new", l_graph_new},
   {NULL, NULL},
 };
 

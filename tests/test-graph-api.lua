@@ -26,5 +26,6 @@ tests.ASSERT_CHECK_API {
    __gc = 'function',
    __index = 'table',
    __metatable = 'string',
+   count = 'function',
    new = 'function',
 }

@@ -22,7 +22,18 @@ local pcall = pcall
 local graph = require'graphprover.graph'
 _ENV = nil
 
-assert (graph.new ())
-assert (graph.new (1000))
-assert (graph.new (-1))
-assert (graph.new (1000000))
+local g = assert (graph.new ())
+local n, e = assert (g:count ())
+assert (n == 0 and e == 0)
+
+local g = assert (g:new (1000))
+local n, e = assert (g:count ())
+assert (n == 1000 and e == 0)
+
+local g = assert (g.new (-1))
+local n, e = assert (g:count ())
+assert (n == 0 and e == 0)
+
+local g = assert (g:new (1000000))
+local n, e = assert (g:count ())
+assert (n == 1000000 and e == 0)
