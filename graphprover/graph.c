@@ -21,17 +21,19 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  */
 #include <glib.h>
 #include <lauxlib.h>
 #include <lua.h>
-
-#include "macros.h"
 #include "luax-macros.h"
 
 PRAGMA_DIAG_PUSH ()
 PRAGMA_DIAG_IGNORE (-Wundef)
 PRAGMA_DIAG_IGNORE (-Wredundant-decls)
 #include <igraph.h>
+#include "igraphx.h"
 PRAGMA_DIAG_POP ()
 
-/* Registry key for the graph metatable.  */
+/***
+ * Directed graph data structure.
+ * @classmod graph
+ */
 #define GRAPH "graphprover.graph"
 
 /* Graph object data.  */
@@ -53,45 +55,39 @@ graph_check (lua_State *L, int index, igraph_t *ig)
 }
 
 
-/**
- * graph:new ([n:number])
- *      -> graph:userdata; or
- *      -> nil, errmsg:string
- *
- * Creates a graph object with N nodes (zero by default) and no edges.
- * Returns the graph object if successful, or nil plus error message.
+/***
+ * Creates a new graph.
+ * @function new
+ * @int[opt=0] n initial number of nodes
+ * @return[1] the resulting graph
+ * @return[2] `nil` plus error message
  */
 static int
 l_graph_new (lua_State *L)
 {
   Graph *graph;
   int n;
-  int status;
 
   luax_optudata (L, 1, GRAPH);
-  n = luaL_checkint (L, 2);
+  n = (int) CLAMP (luaL_optinteger (L, 2, 0), 0, G_MAXINT);
 
   graph = (Graph *) lua_newuserdata (L, sizeof (*graph));
   g_assert_nonnull (graph);
-
-  status = igraph_empty_attrs (&graph->ig, n, TRUE, NULL);
-  if (unlikely (status != IGRAPH_SUCCESS))
-    lua_error (L);
+  igraphx_empty_attrs (&graph->ig, n, TRUE, NULL);
 
   return 1;
 }
 
-/**
- * graph:__gc ()
- *
- * Destroys the given graph object.
+/***
+ * Destroys graph.
+ * @function __gc
  */
 static int
 __l_graph_gc (lua_State *L)
 {
   igraph_t ig;
   graph_check (L, 1, &ig);
-  g_assert (igraph_destroy (&ig) == IGRAPH_SUCCESS);
+  igraphx_destroy (&ig);
   return 0;
 }
 
@@ -103,6 +99,7 @@ static const struct luaL_Reg methods[] = {
   {NULL, NULL},
 };
 
+
 int luaopen_graphprover_graph (lua_State *);
 
 int

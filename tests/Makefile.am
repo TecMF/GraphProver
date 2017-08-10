@@ -57,6 +57,7 @@ AM_TESTS_ENVIRONMENT=\
 scripts=
 # graphprover.graph
 scripts+= test-graph-api.lua
+scripts+= test-graph-new.lua
 # graphprover.wff
 scripts+= test-wff-api.lua
 scripts+= test-wff-new.lua
