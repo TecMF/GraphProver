@@ -74,3 +74,9 @@ fetch-remote-local-nclua:
 	done
 
 fetch-remote-local: fetch-remote-local-nclua
+
+
+server:= tm.telemidia.puc-rio.br:/home/gflima/public_html/misc/
+.PHONY: publish
+publish:
+	scp -r ./doc $(server)GraphProver/
