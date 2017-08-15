@@ -17,16 +17,19 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
 local tests = require'tests'
 local assert = assert
+local print = print
 
 local graph = require'graphprover.graph'
 _ENV = nil
 
-tests.ASSERT_CHECK_API {
-   graph,
-   __gc = 'function',
-   __index = 'table',
-   __metatable = 'string',
-   count = 'function',
-   delete = 'function',
-   new = 'function',
-}
+local g = assert (graph.new (10))
+local n, e = assert (g:count ())
+assert (n == 10 and e == 0)
+
+assert (g:delete (5))
+local n, e = assert (g:count ())
+assert (n == 9 and e == 0)
+
+-- assert (not g:delete (10))
+-- local n, e = assert (g:count ())
+-- assert (n == 9 and e == 0)
