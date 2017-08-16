@@ -30,5 +30,7 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  */
   igraphx_ok (igraph_empty_attrs ((G), (n), (dir), (attr)))
 #define igraphx_destroy(G)\
   igraphx_ok (igraph_destroy ((G)))
+#define igraphx_add_vertices(G, n, attr)\
+  igraphx_ok (igraph_add_vertices ((G), (n), (attr)))
 
 #endif

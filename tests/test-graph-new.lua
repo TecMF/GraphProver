@@ -17,23 +17,10 @@ along with GraphProver.  If not, see <http://www.gnu.org/licenses/>.  ]]--
 
 local tests = require'tests'
 local assert = assert
-local pcall = pcall
 
 local graph = require'graphprover.graph'
 _ENV = nil
 
 local g = assert (graph.new ())
-local n, e = assert (g:count ())
+local n, e = g:count ()
 assert (n == 0 and e == 0)
-
-local g = assert (g:new (1000))
-local n, e = assert (g:count ())
-assert (n == 1000 and e == 0)
-
-local g = assert (g.new (-1))
-local n, e = assert (g:count ())
-assert (n == 0 and e == 0)
-
-local g = assert (g:new (1000000))
-local n, e = assert (g:count ())
-assert (n == 1000000 and e == 0)

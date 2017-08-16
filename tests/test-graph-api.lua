@@ -26,7 +26,8 @@ tests.ASSERT_CHECK_API {
    __gc = 'function',
    __index = 'table',
    __metatable = 'string',
+   add_node = 'function',
    count = 'function',
-   delete = 'function',
    new = 'function',
+   remove_node = 'function',
 }

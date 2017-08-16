@@ -33,21 +33,106 @@ PRAGMA_DIAG_POP ()
 #define TRACE(fmt, ...) g_debug ("%s: " fmt "\n", G_STRFUNC, __VA_ARGS__)
 
 
-/* igraph attributes.  */
+/***
+ * Directed graph data structure.
+ * @classmod graph
+ */
+#define GRAPH "graphprover.graph"
+#define GRAPH_REGISTRY_INDEX  (deconst (void *, &_graph_magic))
+static const int _graph_magic = 0;
 
-static int
-ig_attr_init (igraph_t *graph, igraph_vector_ptr_t *attr)
+#define graph_registry_create(L)\
+  luax_mregistry_create ((L), GRAPH_REGISTRY_INDEX)
+#define graph_registry_get(L)\
+  luax_mregistry_get ((L), GRAPH_REGISTRY_INDEX)
+
+/* Graph object data.  */
+typedef struct Graph
 {
-  TRACE ("graph=%p attr=%p", graph, attr);
-  attr = NULL;
-  graph->attr = attr;
+  igraph_t ig;                  /* underlying igraph */
+  lua_State *L;                 /* associated lua_State */
+} Graph;
+
+/* Checks if the object at INDEX is a graph.
+   If IG is non-NULL, stores the underlying igraph into *IG.  */
+static inline Graph *
+graph_check (lua_State *L, int index, igraph_t **ig)
+{
+  Graph *graph;
+  graph = (Graph *) luaL_checkudata (L, index, GRAPH);
+  g_assert_nonnull (graph);
+  if (ig != NULL)
+    *ig = &graph->ig;
+  return graph;
+}
+
+/* Checks if the object stored in igraph IG is a graph.
+   If L is non-null stores the associated Lua into *L.  */
+static inline Graph *
+graph_check_ig (igraph_t *ig, lua_State **L)
+{
+  Graph *graph;
+  graph = ig->attr;
+  g_assert_nonnull (graph);
+  g_assert_nonnull (graph->L);
+  if (L != NULL)
+    *L = graph->L;
+  return graph;
+}
+
+/* Pushes graph table (or one of its fields) onto stack.  */
+static void
+graph_table (lua_State *L, Graph *graph, const char *field)
+{
+  graph_registry_get (L);
+  lua_rawgetp (L, -1, graph);
+  lua_remove (L, -2);
+  if (field != NULL)
+    {
+      lua_getfield (L, -1, field);
+      lua_remove (L, -2);
+    }
+}
+
+
+/* Initializes graph attributes.
+   Called whenever a new graph is created.  */
+static int
+ig_attr_init (igraph_t *ig, igraph_vector_ptr_t *attr)
+{
+  Graph *graph;
+  lua_State *L;
+
+  ig->attr = attr;
+  graph = graph_check_ig (ig, &L);
+  TRACE ("ig=%p graph=%p L=%p", ig, graph, L);
+
+  /* Creates a table for graph and adds it to module registry.  */
+  graph_registry_get (L);
+  lua_newtable (L);
+  lua_newtable (L);
+  lua_setfield (L, -2, "nodes"); /* node map */
+  lua_newtable (L);
+  lua_setfield (L, -2, "nodes-rev"); /* node reverse map */
+  lua_rawsetp (L, -2, graph);
+  lua_pop (L, 1);
+
   return IGRAPH_SUCCESS;
 }
 
 static void
-ig_attr_destroy (igraph_t *graph)
+ig_attr_destroy (igraph_t *ig)
 {
-  TRACE ("graph=%p", graph);
+  Graph *graph;
+  lua_State *L;
+
+  graph = graph_check_ig (ig, &L);
+  TRACE ("ig=%p graph=%p L=%p", ig, graph, L);
+
+  graph_registry_get (L);
+  lua_pushvalue (L, -2);
+  lua_pushnil (L);
+  lua_rawset (L, -3);
 }
 
 static int
@@ -61,11 +146,47 @@ ig_attr_copy (igraph_t *to, const igraph_t *from,
 }
 
 static int
-ig_attr_add_vertices (igraph_t *graph,
+ig_attr_add_vertices (igraph_t *ig,
                       long int nv,
                       igraph_vector_ptr_t *attr)
 {
-  TRACE ("graph=%p nv=%ld %p=attr", graph, nv, attr);
+  Graph *graph;
+  lua_State *L;
+  const char *id;
+
+  if (nv == 0)
+    return IGRAPH_SUCCESS;      /* nothing to do */
+
+  TRACE ("ig=%p nv=%ld id=%s", ig, nv, (char *) attr);
+  g_assert (nv == 1);
+  id = (const char *) attr;
+  g_assert_nonnull (id);
+
+  graph = (Graph *) ig->attr;
+  g_assert_nonnull (graph);
+  L = graph->L;
+  g_assert_nonnull (L);
+
+  /* Create table for the new node.  */
+  lua_newtable (L);
+  lua_pushstring (L, id);
+  lua_setfield (L, -2, "_id");
+  lua_pushinteger (L, nv - 1);
+  lua_setfield (L, -2, "_index");
+  _luax_dump_stack (L, 3);
+
+  /* Update node map.  */
+  graph_table (L, graph, "nodes");
+  lua_pushvalue (L, -2);
+  lua_setfield (L, -2, id);
+  lua_pop (L, 1);
+
+  /* Update node reverse map.  */
+  graph_table (L, graph, "nodes-rev");
+  lua_pushvalue (L, -2);
+  lua_rawseti (L, -2, nv - 1);
+  lua_pop (L, 1);
+
   return IGRAPH_SUCCESS;
 }
 
@@ -236,7 +357,8 @@ ig_attr_get_boolean_edge_attr (const igraph_t *graph,
   return IGRAPH_SUCCESS;
 }
 
-static G_GNUC_UNUSED igraph_attribute_table_t igraph_attrs = {
+/* igraph attribute table.  */
+static igraph_attribute_table_t igraph_attrs = {
   ig_attr_init,
   ig_attr_destroy,
   ig_attr_copy,
@@ -262,34 +384,8 @@ static G_GNUC_UNUSED igraph_attribute_table_t igraph_attrs = {
 
 
 /***
- * Directed graph data structure.
- * @classmod graph
- */
-#define GRAPH "graphprover.graph"
-
-/* Graph object data.  */
-typedef struct Graph
-{
-  igraph_t ig;
-} Graph;
-
-/* Checks if the object at index is a graph.
-   If IG is non-NULL, stores the graph's igraph handle into *IG.  */
-static inline Graph *
-graph_check (lua_State *L, int index, igraph_t **ig)
-{
-  Graph *graph;
-  graph = (Graph *) luaL_checkudata (L, index, GRAPH);
-  if (ig != NULL)
-    *ig = &graph->ig;
-  return graph;
-}
-
-
-/***
- * Creates a new graph.
+ * Creates a new empty graph.
  * @function new
- * @int[opt=0] n initial number of nodes
  * @return[1] the resulting graph
  * @return[2] `nil` plus error message
  */
@@ -297,14 +393,12 @@ static int
 l_graph_new (lua_State *L)
 {
   Graph *graph;
-  int n;
 
   luax_optudata (L, 1, GRAPH);
-  n = (int) CLAMP (luaL_optinteger (L, 2, 0), 0, G_MAXINT);
-
   graph = (Graph *) lua_newuserdata (L, sizeof (*graph));
   g_assert_nonnull (graph);
-  igraphx_empty_attrs (&graph->ig, n, TRUE, NULL);
+  graph->L = L;
+  igraphx_empty_attrs (&graph->ig, 0, TRUE, graph);
   luaL_setmetatable (L, GRAPH);
 
   return 1;
@@ -342,11 +436,32 @@ l_graph_count (lua_State *L)
   return 2;
 }
 
-/***
- * Remove node from graph.
+/**
+ * Adds node to graph.
+ * @function add_node
+ * @tparam string id Node id.
+ * @return[1] `true` if successful
+ * @return[2] `false` otherwise
  */
 static int
-l_graph_delete (lua_State *L)
+l_graph_add_node (lua_State *L)
+{
+  igraph_t *ig;
+  const char *id;
+
+  graph_check (L, 1, &ig);
+  id = luaL_checkstring (L, 2);
+  igraphx_add_vertices (ig, 1, deconst (void *, id));
+  lua_pushboolean (L, 1);
+
+  return 1;
+}
+
+/***
+ * Removes node from graph.
+ */
+static int
+l_graph_remove_node (lua_State *L)
 {
   igraph_t *ig;
   int id;
@@ -365,9 +480,10 @@ l_graph_delete (lua_State *L)
 /* Graph methods.  */
 static const struct luaL_Reg methods[] = {
   {"__gc", __l_graph_gc},
+  {"add_node", l_graph_add_node},
   {"count", l_graph_count},
-  {"delete", l_graph_delete},
   {"new", l_graph_new},
+  {"remove_node", l_graph_remove_node},
   {NULL, NULL},
 };
 
@@ -378,8 +494,11 @@ int
 luaopen_graphprover_graph (lua_State *L)
 {
   G_TYPE_INIT_WRAPPER ();
-
   igraph_i_set_attribute_table (&igraph_attrs);
+
+  lua_newtable (L);
+  graph_registry_create (L);
+
   luax_newmetatable (L, GRAPH);
   luaL_setfuncs (L, methods, 0);
 

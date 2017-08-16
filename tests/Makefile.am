@@ -58,7 +58,7 @@ scripts=
 # graphprover.graph
 scripts+= test-graph-api.lua
 scripts+= test-graph-new.lua
-scripts+= test-graph-delete.lua
+scripts+= test-graph-add-node.lua
 # graphprover.wff
 scripts+= test-wff-api.lua
 scripts+= test-wff-new.lua
