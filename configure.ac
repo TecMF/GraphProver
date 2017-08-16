@@ -46,12 +46,12 @@ AC_SUBST([GRAPHPROVER_VERSION_MICRO], graphprover_version_micro)
 AC_SUBST([GRAPHPROVER_VERSION_STRING], graphprover_version_string)
 
 # Dependencies version.
+m4_define([glib_required_version], [2.32.4])
+m4_define([igraph_required_version], [0.7.0])
+m4_define([lua_required_version], [5.2])
 AC_SUBST([GLIB_REQUIRED_VERSION], glib_required_version)
 AC_SUBST([IGRAPH_REQUIRED_VERSION], igraph_required_version)
 AC_SUBST([LUA_REQUIRED_VERSION], lua_required_version)
-m4_define([glib_required_version], [2.32.4])
-m4_define([igraph_required_version], [0.7])
-m4_define([lua_required_version], [5.2])
 
 # Tool checks.
 AU_PROG_CC_VISIBILITY
@@ -80,9 +80,7 @@ AU_CHECK_MACROS_H
 
 # Check for GLib.
 AU_VERSION_BREAK([glib], glib_required_version)
-AU_CHECK_PKG([GLIB],
-  glib-2.0 >= glib_required_version dnl
-  gobject-2.0 >= glib_required_version,
+AU_CHECK_PKG([GLIB], glib-2.0 >= glib_required_version,
  [AC_LANG_PROGRAM([[
 #include <glib.h>
 #if !GLIB_CHECK_VERSION  \
@@ -123,7 +121,19 @@ AH_VERBATIM([G_TYPE_INIT_WRAPPER],
 AC_MSG_RESULT([$must_call_g_type_init])
 
 # Check for igraph.
-AU_CHECK_PKG([IGRAPH], [igraph >= igraph_required_version])
+AU_VERSION_BREAK([igraph], igraph_required_version)
+AU_CHECK_PKG([IGRAPH], igraph >= igraph_required_version,
+ [AC_LANG_PROGRAM([[
+#include <igraph.h>
+#if IGRAPH_VERSION_MAJOR
+# if (IGRAPH_VERSION_MAJOR < IGRAPH_REQUIRED_MAJOR) \
+     || (IGRAPH_VERSION_MINOR < IGRAPH_REQUIRED_MINOR) \
+     || (IGRAPH_VERSION_PATCH <  IGRAPH_REQUIRED_MICRO)
+#  error "igraph is too old"
+# endif
+#endif
+ ]])],
+ [AC_LANG_PROGRAM([[]], [[igraph_version (0, 0, 0, 0);]])])
 
 # Check for Lua.
 AU_CHECK_LUA(lua_required_version)
@@ -139,9 +149,10 @@ AU_ARG_WITH([doc], [build documentation])
 AS_IF([test "$with_doc" = no], [],
  [AC_CHECK_PROGS([LDOC], [ldoc])
   AS_IF([test -z "$LDOC"],
-   [AS_IF([test "$with_doc = yes"],
-     [AC_MSG_ERROR([--with-doc requires ldoc])])])
-  with_doc="yes"])
+   [AS_IF([test "$with_doc" = yes],
+     [AC_MSG_ERROR([--with-doc requires ldoc])],
+     [with_doc=no])],
+   [with_doc=yes])])
 AM_CONDITIONAL([WITH_DOC], [test "$with_doc" = yes])
 
 # Output.
@@ -165,5 +176,6 @@ AC_MSG_NOTICE([summary of build options:
   library types: shared=${enable_shared}, static=${enable_static}
   valgrind:      ${VALGRIND}
 
+  lua version:   ${au_lua_version}
   build docs:    ${with_doc}
 ])
